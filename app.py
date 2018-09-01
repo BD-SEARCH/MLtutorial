@@ -9,7 +9,7 @@ from tensorflow.keras.applications.vgg16 import decode_predictions
 
 
 model = VGG16()
-image = load_img('/Users/soyoung/MLtutorial/flag.jpg', target_size=(224, 224))
+image = load_img('/Users/soyoung/MLtutorial/car.jpg', target_size=(224, 224))
 image = img_to_array(image)
 image = image.reshape((1, image.shape[0], image.shape[1], image.shape[2]))
 image = preprocess_input(image)
