@@ -18,7 +18,7 @@ test_generator = test_datagen.flow_from_directory(
 
 # 2. call model
 from keras.models import load_model
-model = load_model('first_model.h5')
+model = load_model('test_model.h5')
 
 # 3. use model
 print("-- Predict --")
