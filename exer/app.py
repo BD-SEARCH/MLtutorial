@@ -15,11 +15,12 @@ import numpy as np
 model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 
 # extract features
-train_dir = './dataset/training_set'
-validation_dir = './dataset/test_set'
+train_dir = '../dataset/training_set'
+validation_dir = '../dataset/test_set'
 
-nTrain = 600
-nVal = 150
+nTrain = 100
+nVal = 50
+epochs=10
 
 # load the images
 datagen = ImageDataGenerator(rescale=1./255)
@@ -34,7 +35,16 @@ train_generator = datagen.flow_from_directory(
     target_size=(224, 224),
     batch_size=batch_size,
     class_mode='categorical',
-    shuffle=shuffle)
+    shuffle=None)
+
+val_datagen = ImageDataGenerator(rescale=1./255)
+val_generator = val_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(224,224),
+    batch_size=batch_size,
+    class_mode='categorical'
+)
+
 
 i = 0
 for inputs_batch, labels_batch in train_generator:
@@ -48,7 +58,6 @@ for inputs_batch, labels_batch in train_generator:
 train_features = np.reshape(train_features, (nTrain, 7 * 7 * 512))
 
 
-
 # make new model
 model = models.Sequential()
 model.add(layers.Dense(256, activation='relu', input_dim=7 * 7 * 512))
@@ -60,50 +69,14 @@ model.compile(optimizer=optimizers.RMSprop(lr=2e-4),
               loss='categorical_crossentropy',
               metrics=['acc'])
 
-history = model.fit(train_features,
-                    train_labels,
-                    epochs=20,
-                    batch_size=batch_size,
-                    validation_data=(validation_features,validation_labels))
+model.fit_generator(train_generator, steps_per_epoch=nTrain, epochs=epochs, validation_data=val_generator, validation_steps=nVal)
+model.save_weights('vgg_model.h5')
 
 
-fnames = validation_generator.filenames
-ground_truth = validation_generator.classes
-label2index = validation_generator.class_indices
-
-# Getting the mapping from class index to class label
-idx2label = dict((v,k) for k,v in label2index.iteritems())
-
-predictions = model.predict_classes(validation_features)
-prob = model.predict(validation_features)
-
-errors = np.where(predictions != ground_truth)[0]
-print("No of errors = {}/{}".format(len(errors),nVal))
-
-for i in range(len(errors)):
-    pred_class = np.argmax(prob[errors[i]])
-    pred_label = idx2label[pred_class]
-
-    print('Original label:{}, Prediction :{}, confidence : {:.3f}'.format(
-        fnames[errors[i]].split('/')[0],
-        pred_label,
-        prob[errors[i]][pred_class]))
-
-    original = load_img('{}/{}'.format(validation_dir,fnames[errors[i]]))
-    plt.imshow(original)
-    plt.show()
+# history = model.fit(train_features,
+#                     train_labels,
+#                     epochs=20,
+#                     batch_size=batch_size,
+#                     validation_data=(validation_features,validation_labels))
 
 
-
-
-# img_path = '/Users/soyoung/MLtutorial/img/cat.jpg'
-# img = image.load_img(img_path, target_size=(224, 224))
-#
-# x = image.img_to_array(img)
-#
-# # # extract features
-# x = np.expand_dims(x, axis=0)
-# x = preprocess_input(x)
-#
-# features = model.predict(x)
-# print('Predicted:', decode_predictions(features, top=3)[0])
