@@ -1,7 +1,6 @@
 # MLtutorial
-Ready for ML
 
-https://github.com/BD-SEARCH/MLtutorial/wiki
+* 인공지능에 관련한 개념을 정리합니다 : https://github.com/BD-SEARCH/MLtutorial/wiki
 
 ### 01. CNN 사용해보기
 - cnn 모델 생성
